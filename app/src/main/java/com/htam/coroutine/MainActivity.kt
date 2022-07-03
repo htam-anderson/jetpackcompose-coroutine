@@ -12,6 +12,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import com.htam.coroutine.ui.theme.CoroutineTheme
 import kotlinx.coroutines.*
+import kotlin.system.measureTimeMillis
 
 class MainActivity : ComponentActivity() {
 
@@ -28,36 +29,57 @@ class MainActivity : ComponentActivity() {
             }
         }
 
-        val job = GlobalScope.launch(Dispatchers.Default) {
-//            repeat(5) {
-//                Log.d(TAG, "Coroutine is continuing...")
-//                delay(1000L)
+//        // Problem
+//        GlobalScope.launch(Dispatchers.IO) {
+//            val time = measureTimeMillis {
+//                val response1 = callAPI1()
+//                val response2 = callAPI2()
+//
+//                Log.d(TAG, "Response for API1: $response1")
+//                Log.d(TAG, "Response for API2: $response2")
 //            }
-            Log.d(TAG, "Start run long calculation")
-//            withTimeout(3000L) {
-//                // ....
-//            }
-            for(i in 30..40) {
-//                if (isActive) {
-//                    Log.d(TAG, "result of $i : ${fib(i)}")
-//                }
-                Log.d(TAG, "result of $i : ${fib(i)}")
-            }
-            Log.d(TAG, "End run long calculation")
-        }
+//            Log.d(TAG, "Total time takes: $time ms.")
+//        }
 
-        runBlocking {
-//            job.join() // Waiting for the job to finish
-            delay(2000L)
-            job.cancel() // Cancel the job
-            Log.d(TAG, "Cancel JOB!!!")
+        // Approach 1: Terrible
+//        GlobalScope.launch(Dispatchers.IO) {
+//            val time = measureTimeMillis {
+//                var response1: String ? = null
+//                var response2: String ? = null
+//
+//                val job1 = launch { response1 = callAPI1() }
+//                val job2 = launch { response2 = callAPI2() }
+//
+//                job1.join()
+//                job2.join()
+//
+//                Log.d(TAG, "Response for API1: $response1")
+//                Log.d(TAG, "Response for API2: $response2")
+//            }
+//            Log.d(TAG, "Total time takes: $time ms.")
+//        }
+
+        // Approach 2: Async Await babe ^^
+        GlobalScope.launch(Dispatchers.IO) {
+            val time = measureTimeMillis {
+                val response1 = async { callAPI1() }
+                val response2 = async { callAPI2() }
+
+                Log.d(TAG, "Response for API1: ${response1.await()}")
+                Log.d(TAG, "Response for API2: ${response2.await()}")
+            }
+            Log.d(TAG, "Total time takes: $time ms.")
         }
     }
 
-    fun fib(n: Int): Long {
-        return if(n == 0) 0
-        else if (n == 1) 1
-        else fib(n - 1) + fib(n -2)
+    private suspend fun callAPI1(): String {
+        delay(3000L)
+        return "Response of API 1"
+    }
+
+    private suspend fun callAPI2(): String {
+        delay(3000L)
+        return "Response of API 2"
     }
 }
 
