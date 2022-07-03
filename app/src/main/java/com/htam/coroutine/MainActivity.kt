@@ -28,30 +28,36 @@ class MainActivity : ComponentActivity() {
             }
         }
 
-//        // Not block the Main Thread
-//        GlobalScope.launch {
-//            delay(3000L)
-//        }
-
-        // Block the Main Thread
-        Log.d(TAG,"Before runBlocking")
-        runBlocking {
-            launch(Dispatchers.IO) {
-                Log.d(TAG, "Running Thread: ${Thread.currentThread().name}")
-                delay(3000L)
-                Log.d(TAG,"Finished IO 1")
+        val job = GlobalScope.launch(Dispatchers.Default) {
+//            repeat(5) {
+//                Log.d(TAG, "Coroutine is continuing...")
+//                delay(1000L)
+//            }
+            Log.d(TAG, "Start run long calculation")
+//            withTimeout(3000L) {
+//                // ....
+//            }
+            for(i in 30..40) {
+//                if (isActive) {
+//                    Log.d(TAG, "result of $i : ${fib(i)}")
+//                }
+                Log.d(TAG, "result of $i : ${fib(i)}")
             }
-            launch(Dispatchers.IO) {
-                Log.d(TAG, "Running Thread: ${Thread.currentThread().name}")
-                delay(3000L)
-                Log.d(TAG,"Finished IO 2")
-            }
-
-            Log.d(TAG,"Start Block the Main Threat")
-            delay(5000L) // Same with Thread.sleep(5000L)
-            Log.d(TAG,"End Block the Main Threat")
+            Log.d(TAG, "End run long calculation")
         }
-        Log.d(TAG,"After runBlocking")
+
+        runBlocking {
+//            job.join() // Waiting for the job to finish
+            delay(2000L)
+            job.cancel() // Cancel the job
+            Log.d(TAG, "Cancel JOB!!!")
+        }
+    }
+
+    fun fib(n: Int): Long {
+        return if(n == 0) 0
+        else if (n == 1) 1
+        else fib(n - 1) + fib(n -2)
     }
 }
 
