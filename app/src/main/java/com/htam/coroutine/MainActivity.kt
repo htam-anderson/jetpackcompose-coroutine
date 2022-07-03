@@ -30,15 +30,27 @@ class MainActivity : ComponentActivity() {
             }
         }
 
-        // GlobalScope is stay until the application die
         GlobalScope.launch {
-            // this is just only pause the current coroutine, it not block the thread
-            // different with sleep from thread
-            delay(5000L)
-            Log.d(TAG, "Coroutine from thread ${Thread.currentThread().name}")
-            // this coroutine will be cancel when the main thread die
+            Log.d(TAG, "Start call APIs")
+
+            val resApi1 = callAPI1()
+            val resApi2 = callAPI2()
+
+            // The time is sum up (3s + 4s = 7s) because is in the same coroutine scope
+            Log.d(TAG, "Call API1: $resApi1")
+            Log.d(TAG, "Call API2: $resApi2")
         }
-        Log.d(TAG, "Hello from thread ${Thread.currentThread().name}")
+
+    }
+
+    private suspend fun callAPI1(): String {
+        delay(3000L)
+        return "This is the response of API-1"
+    }
+
+    private suspend fun callAPI2(): String {
+        delay(4000L)
+        return "This is the response of API-2"
     }
 }
 
